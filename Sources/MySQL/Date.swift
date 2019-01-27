@@ -67,6 +67,32 @@ extension Date {
                     return
                 }
             }
+        case 23:
+            let chars: [Character] = Array(sqlDate)
+            if let year = Int(String(chars[0...3])),
+                let month = Int(String(chars[5...6])),
+                let day = Int(String(chars[8...9])),
+                let hour = Int(String(chars[11...12])),
+                let minute = Int(String(chars[14...15])),
+                let second = Int(String(chars[17...18])),
+                let millisecond = Int(String(chars[20...22])), year > 0 && day > 0 && month > 0 {
+                var comps = DateComponents()
+                comps.year = year
+                comps.month = month
+                comps.day = day
+                comps.hour = hour
+                comps.minute = minute
+                comps.second = second
+                comps.second = second
+                comps.nanosecond = millisecond * 1_000_000
+                let parsedDate: Date? = SQLDateCalendar.calendar(forTimezone: timeZone) { calendar in
+                    calendar.date(from :comps)
+                }
+                if let date = parsedDate {
+                    self = date
+                    return
+                }
+            }
         default: break
         }
         
@@ -77,10 +103,10 @@ extension Date {
 extension Date: QueryParameter {
     public func queryParameter(option: QueryParameterOption) -> QueryParameterType {
         let comp: DateComponents = SQLDateCalendar.calendar(forTimezone: option.timeZone) { calendar in
-            calendar.dateComponents([ .year, .month,  .day,  .hour, .minute, .second], from: self)
-        }        
-        // YYYY-MM-DD HH:MM:SS
-        return EscapedQueryParameter( "'\(pad(num: comp.year ?? 0, digits: 4))-\(pad(num: comp.month ?? 0))-\(pad(num: comp.day ?? 0)) \(pad(num: comp.hour ?? 0)):\(pad(num: comp.minute ?? 0)):\(pad(num: comp.second ?? 0))'" )
+            calendar.dateComponents([ .year, .month,  .day,  .hour, .minute, .second, .nanosecond], from: self)
+        }
+        // YYYY-MM-DD HH:MM:ss.SSSSSS
+        return EscapedQueryParameter( "'\(pad(num: comp.year ?? 0, digits: 4))-\(pad(num: comp.month ?? 0))-\(pad(num: comp.day ?? 0)) \(pad(num: comp.hour ?? 0)):\(pad(num: comp.minute ?? 0)):\(pad(num: comp.second ?? 0)).\(pad(num: comp.nanosecond ?? 0))'" )
     }
 }
 
