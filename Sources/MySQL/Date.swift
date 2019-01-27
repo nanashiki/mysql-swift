@@ -77,10 +77,10 @@ extension Date {
 extension Date: QueryParameter {
     public func queryParameter(option: QueryParameterOption) -> QueryParameterType {
         let comp: DateComponents = SQLDateCalendar.calendar(forTimezone: option.timeZone) { calendar in
-            calendar.dateComponents([ .year, .month,  .day,  .hour, .minute, .second], from: self)
-        }        
-        // YYYY-MM-DD HH:MM:SS
-        return EscapedQueryParameter( "'\(pad(num: comp.year ?? 0, digits: 4))-\(pad(num: comp.month ?? 0))-\(pad(num: comp.day ?? 0)) \(pad(num: comp.hour ?? 0)):\(pad(num: comp.minute ?? 0)):\(pad(num: comp.second ?? 0))'" )
+            calendar.dateComponents([ .year, .month,  .day,  .hour, .minute, .second, .nanosecond], from: self)
+        }
+        // YYYY-MM-DD HH:MM:ss.SSSSSS
+        return EscapedQueryParameter( "'\(pad(num: comp.year ?? 0, digits: 4))-\(pad(num: comp.month ?? 0))-\(pad(num: comp.day ?? 0)) \(pad(num: comp.hour ?? 0)):\(pad(num: comp.minute ?? 0)):\(pad(num: comp.second ?? 0)).\(pad(num: comp.nanosecond ?? 0))'" )
     }
 }
 
